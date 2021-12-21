@@ -2,7 +2,7 @@
 #include <iterator>
 
 template<typename T>
-class Chm_iterator /*: std::iterator<std::random_access_iterator_tag, T>*/ {
+class Chm_iterator  {
 public:
     using iterator_category = std::random_access_iterator_tag;
     using difference_type = std::ptrdiff_t;
@@ -21,7 +21,7 @@ public:
 	Chm_iterator operator--(int);
 
 	reference operator*();
-	reference operator[](difference_type i); //Difference_type rather than size_type to allow [-4] etc.
+	reference operator[](difference_type i); 
     pointer operator->();
 
 	bool operator==(const Chm_iterator& it) const;
@@ -36,8 +36,6 @@ public:
 	difference_type operator-(const Chm_iterator& it) const;
 	Chm_iterator operator+(difference_type n) const; 
 	Chm_iterator operator-(difference_type n) const;
-	//I will not define friend Chm_iterator operator+(difference_type n, const Chm_iterator& it), as it does not add any functionality.
-	//Furthermore p + 4 should in my opinion be viewed as 'starting address -> amount of steps', and not the other way around (so definining this will only allow for bad readability).
 private:
     pointer p;
 };

@@ -56,19 +56,19 @@ Chm_iterator<T> Chm_iterator<T>::operator++(int) {
 template<typename T>
 Chm_iterator<T>& Chm_iterator<T>::operator--() {
 	p--;
-    return *this;
+	return *this;
 }
 
 template<typename T>
 Chm_iterator<T> Chm_iterator<T>::operator--(int) {
-    const Chm_iterator temp(*this);
-    p--;
-    return temp;
+	const Chm_iterator temp(*this);
+	p--;
+	return temp;
 }
 
 template<typename T>
 typename Chm_iterator<T>::reference Chm_iterator<T>::operator*() {
-		return *p;
+	return *p;
 }
 
 template<typename T>
@@ -78,12 +78,12 @@ typename Chm_iterator<T>::reference Chm_iterator<T>::operator[](difference_type 
 
 template<typename T>
 typename Chm_iterator<T>::pointer Chm_iterator<T>::operator->() {
-    return p;
+	return p;
 }
 
 template<typename T>
 bool Chm_iterator<T>::operator==(const Chm_iterator<T>& it) const {
-		return p == it.p;
+	return p == it.p;
 }
 
 template<typename T>

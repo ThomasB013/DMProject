@@ -22,7 +22,7 @@ If this is not the case the vector might be stuck when pushing back in a full ve
 
 Regarding mem_base.h:
 1. This is based on page 397 (section 13.6.2) of C++ Programing by Bjarne Stroustrup.
-2. We know hold the last element and total for each row in our matrix. This is double.
+2. We hold the last element and total for each row in our matrix. This is double as each row has the same size and fill.
 I still keep this because it allows for easier function and smaller scope, hence the code is easier.
 3. In the = operator for R-value reference we assume that the destructor will get called, hence we don't need to call the destructor on other. 
 The same goes for My_vec. If someone is smart enough to call std::move, then that person should also be smart enough to call the destructor, which is public, if 

@@ -17,9 +17,13 @@ Regarding my_vec.h:
 2. It is mainly for exercise. 
 3. All size changing functionalities (push_back, operator=, pop_back) are protected. This will allow matrix (which has my_vec<my_vec<T>>) to make a my_vec<T>& operator[](size_type i)
 without worring about the user changing the size of single rows.
+4. MIN_SIZE and GROWING_RATIO are constants that determine initializing and push_back. Make sure that ground(MIN_SIZE * GROWING_RATIO) > MIN_SIZE.
+If this is not the case the vector might be stuck when pushing back in a full vector of size MIN_SIZE.
 
 Regarding mem_base.h:
 1. This is based on page 397 (section 13.6.2) of C++ Programing by Bjarne Stroustrup.
 2. We know hold the last element and total for each row in our matrix. This is double.
 I still keep this because it allows for easier function and smaller scope, hence the code is easier.
-3. In the = operator for R-value reference we assume that the destructor will get called, hence we don't need to call the destructor on other.
+3. In the = operator for R-value reference we assume that the destructor will get called, hence we don't need to call the destructor on other. 
+The same goes for My_vec. If someone is smart enough to call std::move, then that person should also be smart enough to call the destructor, which is public, if 
+they wanted to have the memory freed.

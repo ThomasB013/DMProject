@@ -1,8 +1,14 @@
+#pragma once
+
 #include "mem_base.h"
 #include "chm_iterator.h"
 
+#include <iostream>
+#include <memory>
+#include <utility>
+
 const size_t GROWING_RATIO = 2;
-const size_t MIN_SIZE = 4; //Make sure that ground(MIN_SIZE * GROWING_RATIO) > MIN_SIZE.
+const size_t DEFAULT_SIZE = 4;
 
 
 template<typename T, typename A = std::allocator<T>>
@@ -25,14 +31,22 @@ public:
     My_vec(const My_vec& v);
 
     size_type size() const;
+    size_type capacity() const;
     iterator begin();
     iterator end();
 
     reference operator[](size_type i);
     const_reference operator[](size_type i) const;
-
-protected:
     
+    My_vec<T, A>& operator=(My_vec<T, A>&& v);
+    My_vec<T, A>& operator=(const My_vec<T, A>& v);
+
+    My_vec<T, A>& push_back(T&& val);
+    My_vec<T, A>& push_back(const T& val);
+    My_vec<T, A>& pop_back();
+
+    My_vec<T, A>& reserve(size_type n);
+
 private:
     Mem_base<T, A> b;
     void destroy_elements();
@@ -44,7 +58,7 @@ private:
 //*****************************
 
 template<typename T, typename A>
-My_vec<T, A>::My_vec() :b{A{}, 0, MIN_SIZE} {}
+My_vec<T, A>::My_vec() :b{A{}, 0, DEFAULT_SIZE} {}
 
 template<typename T, typename A>
 My_vec<T, A>::My_vec(size_type n, const T& val, const A& a) :b{a, n} {
@@ -57,9 +71,7 @@ My_vec<T, A>::My_vec(std::initializer_list<T> l) :b{A{}, l.size()} {
 }
 
 template<typename T, typename A>
-My_vec<T, A>::My_vec(My_vec&& v)  {
-    b = move(v.b);
-}
+My_vec<T, A>::My_vec(My_vec&& v) :b{move(v.b)} { }
 
 template<typename T, typename A>
 My_vec<T, A>::My_vec(const My_vec& v) :b{v.b.alloc, v.size()} {
@@ -69,6 +81,11 @@ My_vec<T, A>::My_vec(const My_vec& v) :b{v.b.alloc, v.size()} {
 template<typename T, typename A>
 typename My_vec<T, A>::size_type My_vec<T, A>::size() const {
     return b.last - b.elem;
+}
+
+template<typename T, typename A>
+typename My_vec<T, A>::size_type My_vec<T, A>::capacity() const {
+    return b.space - b.elem;
 }
 
 template<typename T, typename A>
@@ -91,16 +108,79 @@ typename My_vec<T, A>::const_reference My_vec<T, A>::operator[](size_type i) con
     return b.elem[i];
 }
 
-
 //*****************************
 //      PROTECTED
 //*****************************
 
+template<typename T, typename A>
+My_vec<T, A>& My_vec<T, A>::operator=(My_vec<T, A>&& v) {
+    swap(b, v.b);
+    return *this;
+}
+
+template<typename T, typename A>
+My_vec<T, A>& My_vec<T, A>::operator=(const My_vec<T, A>& v) {
+    if (this == &v)
+        return *this;
+    
+    if (size() >= v.size()) {
+        destroy_elements(); //Clear the elements
+        std::uninitialized_copy(v.b.elem, v.b.elem + v.size(), b.elem); //And fill what you need.
+        b.last = b.elem + v.size();
+    } else{
+        My_vec<T, A> temp {v}; //Copy v completely, including allocated size.
+        swap(*this, temp);
+    }
+    return *this;    
+}
+
+template<typename T, typename A>
+My_vec<T, A>& My_vec<T, A>::push_back(T&& val) {
+    if (b.last == b.space)
+        resize(size() * GROWING_RATIO);
+    *b.last = val;
+    b.last++;
+    return *this;
+}
+
+template<typename T, typename A>
+My_vec<T, A>& My_vec<T, A>::push_back(const T& val) {
+    T copy {val};
+    return push_back(std::move(copy));
+}
+
+template<typename T, typename A>
+My_vec<T, A>& My_vec<T, A>::pop_back() {
+    if (b.last == b.elem) //This also checks for nullpointers.
+        return *this;
+    b.last--;
+    b.last->~T();
+    return *this;
+}
+
+template<typename T, typename A>
+My_vec<T, A>& My_vec<T, A>::reserve(size_type n) {
+    if (capacity() < n)
+        resize(n);
+}
+
 //*****************************
 //      PRIVATE
 //*****************************
+
 template<typename T, typename A>
-void My_vec<T, A>::destroy_elements(){
+void My_vec<T, A>::destroy_elements() {
     for(auto p = b.elem; p != b.last; ++p)
         p->~T();
+}
+
+template<typename T, typename A>
+void My_vec<T, A>::resize(size_type new_size) {
+    while(size() > new_size)
+        pop_back();
+
+    Mem_base<T, A> m {b.alloc, new_size};
+    m.last = m.elem + size();
+    std::uninitialized_move(b.elem, b.last, m.elem);
+    swap(b, m);
 }

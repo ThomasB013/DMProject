@@ -13,12 +13,10 @@ Furthermore p + 4 should in my opinion be viewed as 'starting address -> amount 
 4. For reference operator[](difference_type i) I chose difference_type rather than size_type to allow [-4] etc.
 
 Regarding my_vec.h:
-1. This is an imitatino of the real vector. (Of course I know that the real vector is better than mine)
+1. This is an imitation of the real vector (yes I know that the real vector is better than mine).
 2. It is mainly for exercise. 
-3. All size changing functionalities (push_back, operator=, pop_back) are protected. This will allow matrix (which has my_vec<my_vec<T>>) to make a my_vec<T>& operator[](size_type i)
-without worring about the user changing the size of single rows.
-4. MIN_SIZE and GROWING_RATIO are constants that determine initializing and push_back. Make sure that ground(MIN_SIZE * GROWING_RATIO) > MIN_SIZE.
-If this is not the case the vector might be stuck when pushing back in a full vector of size MIN_SIZE.
+3. A problem for Matrix is that Matrix[3] will return a vector, representing the row. But this allows the user to do things as Matrix[3].push_back("I am messing with the squaredness");
+4. DEFAULT_SIZE and GROWING_RATIO are constants that determine initializing and push_back.
 
 Regarding mem_base.h:
 1. This is based on page 397 (section 13.6.2) of C++ Programing by Bjarne Stroustrup.

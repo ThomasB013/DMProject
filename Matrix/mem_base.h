@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 
 template<typename T, typename A = std::allocator<T>>
@@ -14,7 +16,7 @@ struct Mem_base{
     Mem_base(const Mem_base&) = delete;
     Mem_base& operator=(const Mem_base&) = delete;
     
-    Mem_base(Mem_base&& other) :alloc{other.a}, elem{other.elem}, last{other.last}, space{other.space} {
+    Mem_base(Mem_base&& other) :alloc{other.alloc}, elem{other.elem}, last{other.last}, space{other.space} {
         other.elem = other.space = other.last = nullptr;    
     }
 
@@ -23,5 +25,6 @@ struct Mem_base{
         swap(elem, other.elem);
         swap(last, other.last);
         swap(space, other.space);
+        return *this;
     }
 };

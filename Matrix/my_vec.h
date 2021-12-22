@@ -37,7 +37,7 @@ public:
 
     reference operator[](size_type i);
     const_reference operator[](size_type i) const;
-    
+
     My_vec<T, A>& operator=(My_vec<T, A>&& v);
     My_vec<T, A>& operator=(const My_vec<T, A>& v);
 
@@ -108,10 +108,6 @@ typename My_vec<T, A>::const_reference My_vec<T, A>::operator[](size_type i) con
     return b.elem[i];
 }
 
-//*****************************
-//      PROTECTED
-//*****************************
-
 template<typename T, typename A>
 My_vec<T, A>& My_vec<T, A>::operator=(My_vec<T, A>&& v) {
     swap(b, v.b);
@@ -137,7 +133,7 @@ My_vec<T, A>& My_vec<T, A>::operator=(const My_vec<T, A>& v) {
 template<typename T, typename A>
 My_vec<T, A>& My_vec<T, A>::push_back(T&& val) {
     if (b.last == b.space)
-        resize(size() * GROWING_RATIO);
+        resize(max(DEFAULT_SIZE, size() * GROWING_RATIO));
     *b.last = val;
     b.last++;
     return *this;

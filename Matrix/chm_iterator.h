@@ -112,13 +112,13 @@ bool Chm_iterator<T>::operator>=(const Chm_iterator<T>& it) const {
 }
 
 template<typename T>
-Chm_iterator<T>& Chm_iterator<T>::operator+=(typename Chm_iterator<T>::difference_type n){
+Chm_iterator<T>& Chm_iterator<T>::operator+=(difference_type n){
 	p += n;
 	return *this;
 }
 
 template<typename T>
-Chm_iterator<T>& Chm_iterator<T>::operator-=(typename Chm_iterator<T>::difference_type n) {
+Chm_iterator<T>& Chm_iterator<T>::operator-=(difference_type n) {
 	p -= n;
 	return *this;
 }
@@ -129,11 +129,11 @@ typename Chm_iterator<T>::difference_type Chm_iterator<T>::operator-(const Chm_i
 }
 
 template<typename T>
-typename Chm_iterator<T>::Chm_iterator Chm_iterator<T>::operator+(typename Chm_iterator<T>::difference_type n) const {
+Chm_iterator<T> Chm_iterator<T>::operator+(difference_type n) const {
 	return Chm_iterator(p + n);
 }
 
 template<typename T>
-Chm_iterator<T> Chm_iterator<T>::operator-(typename Chm_iterator<T>::difference_type n) const {
+Chm_iterator<T> Chm_iterator<T>::operator-(difference_type n) const {
 	return Chm_iterator(p - n);
 }

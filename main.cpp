@@ -22,7 +22,9 @@ int main(){
     cout << A;
     cout << std::boolalpha << A.is_rect() << '\t' << A.is_square() << '\n';
 
-    
+    auto X = A;
+    cout << X;
+
     Matrix<int> B {{3, 4, 5}, {4, 5, 6}};
     cout << B;
     cout << std::boolalpha << B.is_rect() << '\t' << B.is_square() << '\n';

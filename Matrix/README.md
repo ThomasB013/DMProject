@@ -5,6 +5,8 @@ I keep everything in a .h because of linking issues. The only thing I found so f
 Regarding Matrix.h
 1. A matrix is a collection of rows. (Or rows of rows.)
 2. C++17 does not allow for throw declarations. I keep them in comments because I find it a useful addition to the interface.
+3. Make Matrix all public (struct), because 1. Matrix[3] would return the row anyways, thus allowing the users to heavily interfere. 2. The only real constraint is that a matrix should be rectangular at all times. 
+4. To make up for the loss of guaranty, define throwing alternatives for each function.
 
 Regarding chm_iterator.h:
 1. CHM stands for consecutive homogeneous memory. This allows for a single iterator which I implemented here. 

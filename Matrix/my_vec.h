@@ -23,7 +23,6 @@ public:
     using iterator = Chm_iterator<T>;
     using const_iterator = const_Chm_iterator<T>;
    
-
     explicit My_vec();
     explicit My_vec(size_type n, const T& val = T{}, const A& a = A{});
     My_vec(std::initializer_list<T> l);
@@ -37,6 +36,8 @@ public:
     iterator end();
     const_iterator begin() const;
     const_iterator end() const;
+
+    bool operator==(const My_vec<T, A>& v) const;
 
     reference operator[](size_type i);
     const_reference operator[](size_type i) const;
@@ -100,6 +101,21 @@ template<typename T, typename A>
 typename My_vec<T, A>::iterator My_vec<T, A>::end() {
     return iterator{b.last};
 }
+
+template<typename T, typename A>
+bool My_vec<T, A>::operator==(const My_vec<T, A>& v) const {
+    if (size() != v.size())
+        return false;
+    
+    if(this == &v)
+        return true;
+
+    for(size_type i = 0; i != v.size(); ++i)
+        if (b.elem[i] != v.b.elem[i])
+            return false;
+    return true;
+}
+
 
 template<typename T, typename A>
 typename My_vec<T, A>::const_iterator My_vec<T, A>::begin() const {

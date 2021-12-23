@@ -1,2 +1,0 @@
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-P\mingw64\bin\ar.exe qc libMathFuncs.a CMakeFiles/MathFuncs.dir/mysqrt.cpp.obj CMakeFiles/MathFuncs.dir/greet.cpp.obj
-C:\PROGRA~1\MINGW-~1\X86_64~1.0-P\mingw64\bin\ranlib.exe libMathFuncs.a

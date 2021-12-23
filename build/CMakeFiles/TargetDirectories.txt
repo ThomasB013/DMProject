@@ -1,0 +1,3 @@
+C:/Users/thoma/Documents/Computing Science/Year 2/Semester 1/Data Mining/DMProject/build/CMakeFiles/DMProject.dir
+C:/Users/thoma/Documents/Computing Science/Year 2/Semester 1/Data Mining/DMProject/build/CMakeFiles/edit_cache.dir
+C:/Users/thoma/Documents/Computing Science/Year 2/Semester 1/Data Mining/DMProject/build/CMakeFiles/rebuild_cache.dir

@@ -4,6 +4,7 @@ I keep everything in a .h because of linking issues. The only thing I found so f
 
 Regarding Matrix.h
 1. A matrix is a collection of rows. (Or rows of rows.)
+2. C++17 does not allow for throw declarations. I keep them in comments because I find it a useful addition to the interface.
 
 Regarding chm_iterator.h:
 1. CHM stands for consecutive homogeneous memory. This allows for a single iterator which I implemented here. 

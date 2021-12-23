@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include "Matrix/Matrix.h"
+#include "Matrix/matrix.h"
 using namespace std;
 
 //#include "Matrix/chm_iterator.h"
@@ -17,12 +17,22 @@ void print(My_vec<T> v){
 
 int main(){
     
-    My_vec<int> row {1, 2, 3, 4, 5};
-    for (int i = 6; i <= 10; ++i){
-        row.push_back(i);
-    }
+    //My_vec<My_vec<int>> a {v1, v2};
+    Matrix<int> A {{1, 2}, {3, 4}};
+    cout << A;
+    cout << std::boolalpha << A.is_rect() << '\t' << A.is_square() << '\n';
 
-    print(row);
-    row.push_back(7);
-    print(row);
+    
+    Matrix<int> B {{3, 4, 5}, {4, 5, 6}};
+    cout << B;
+    cout << std::boolalpha << B.is_rect() << '\t' << B.is_square() << '\n';
+//    Matrix<int> A {{1, 2}, {3, 4}};
+
+    //for(const auto& r : A.data){
+    //    for(int x : r){
+    //        cout << x << ' ';
+    //    }
+    //    cout << '\n';
+    //}
+    
 }

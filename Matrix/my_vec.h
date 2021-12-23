@@ -21,7 +21,7 @@ public:
     using pointer = T*;
     using const_pointer = const T*;
     using iterator = Chm_iterator<T>;
-
+    using const_iterator = const_Chm_iterator<T>;
    
 
     explicit My_vec();
@@ -29,11 +29,14 @@ public:
     My_vec(std::initializer_list<T> l);
     My_vec(My_vec&& v);
     My_vec(const My_vec& v);
+    ~My_vec() { destroy_elements(); }
 
     size_type size() const;
     size_type capacity() const;
     iterator begin();
     iterator end();
+    const_iterator begin() const;
+    const_iterator end() const;
 
     reference operator[](size_type i);
     const_reference operator[](size_type i) const;
@@ -99,6 +102,16 @@ typename My_vec<T, A>::iterator My_vec<T, A>::end() {
 }
 
 template<typename T, typename A>
+typename My_vec<T, A>::const_iterator My_vec<T, A>::begin() const {
+    return const_iterator{b.elem};
+}
+
+template<typename T, typename A>
+typename My_vec<T, A>::const_iterator My_vec<T, A>::end() const {
+    return const_iterator{b.last};
+}
+
+template<typename T, typename A>
 typename My_vec<T, A>::reference My_vec<T, A>::operator[](size_type i) {
     return b.elem[i];
 }
@@ -123,7 +136,7 @@ My_vec<T, A>& My_vec<T, A>::operator=(const My_vec<T, A>& v) {
         destroy_elements(); //Clear the elements
         std::uninitialized_copy(v.b.elem, v.b.elem + v.size(), b.elem); //And fill what you need.
         b.last = b.elem + v.size();
-    } else{
+    } else {
         My_vec<T, A> temp {v}; //Copy v completely, including allocated size.
         swap(*this, temp);
     }

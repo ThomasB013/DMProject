@@ -21,10 +21,10 @@ struct Mem_base{
     }
 
     Mem_base& operator=(Mem_base&& other){
-        swap(alloc, other.alloc);
-        swap(elem, other.elem);
-        swap(last, other.last);
-        swap(space, other.space);
+        std::swap(alloc, other.alloc);
+        std::swap(elem, other.elem);
+        std::swap(last, other.last);
+        std::swap(space, other.space);
         return *this;
     }
 };

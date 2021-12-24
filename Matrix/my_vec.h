@@ -38,6 +38,7 @@ public:
     const_iterator end() const;
 
     bool operator==(const My_vec<T, A>& v) const;
+    bool operator!=(const My_vec<T, A>& v) const;
 
     reference operator[](size_type i);
     const_reference operator[](size_type i) const;
@@ -116,6 +117,10 @@ bool My_vec<T, A>::operator==(const My_vec<T, A>& v) const {
     return true;
 }
 
+template<typename T, typename A>
+bool My_vec<T, A>::operator!=(const My_vec<T, A>& v) const {
+    return !(*this == v);
+}
 
 template<typename T, typename A>
 typename My_vec<T, A>::const_iterator My_vec<T, A>::begin() const {

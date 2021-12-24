@@ -20,6 +20,8 @@ Regarding my_vec.h:
 2. It is mainly for exercise. 
 3. A problem for Matrix is that Matrix[3] will return a vector, representing the row. But this allows the user to do things as Matrix[3].push_back("I am messing with the squaredness");
 4. DEFAULT_SIZE and GROWING_RATIO are constants that determine initializing and push_back.
+5. I think some functions could have a template for their allocator. For example to compare elements we don't need the allocators to be of the same type.
+I don't implement this for the same reason I don't use namespaces: this is a try-out project more than a try-to-be-complete project.
 
 Regarding mem_base.h:
 1. This is based on page 397 (section 13.6.2) of C++ Programing by Bjarne Stroustrup.

@@ -155,6 +155,8 @@ matrix inv(const matrix& A) {/*throws(non_invertible, non_square)*/
                 A_I[i][N + j] = 1;
         }
     to_rref(A_I);
+    if (!is_one(A_I[N-1][N-1])) //Safely assume N >= 1.
+        throw non_invertible {};
 
     matrix::vector<st> v(A.col_count());
     for (st i = 0; i != N; ++i)

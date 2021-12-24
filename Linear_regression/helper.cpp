@@ -2,6 +2,18 @@
 
 #include <utility>
 
+bool iin(double v, double n, double e) { 
+    return (n - e < v && v < n + e);
+}
+
+bool is_one(double v) {
+    return iin(v, 1, EPS);
+}
+
+bool is_zero(double v){
+    return iin(v, 0, EPS);
+}
+
 matrix operator+(const matrix& A, const matrix& B) {
     matrix copy {B};
     return operator+(A, std::move(copy));
@@ -71,4 +83,23 @@ matrix operator*(const matrix& A, const matrix& B) {
             for (matrix::size_type k = 0; k != B.row_count(); ++k)
                 ans[i][j] += A[i][k] * B[k][j];
     return ans;
+}
+
+void row_add(matrix& A, matrix::size_type r1, double c, matrix::size_type r2) {
+    for (matrix::size_type j = 0; j != A.col_count(); ++j)
+        A[r1][j] += c * A[r2][j];
+}
+
+void row_swap(matrix& A, matrix::size_type r1, matrix::size_type r2) {
+    std::swap(A[r1], A[r2]);
+}
+
+matrix get_rref(const matrix& A) {
+    matrix copy {A};
+    to_rref(copy); 
+    return copy;
+}
+
+void to_rref(matrix& A) {
+    
 }

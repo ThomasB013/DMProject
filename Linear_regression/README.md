@@ -8,4 +8,4 @@ I will not return the references to the objects that are being modified. I do fi
 D.row_add(1, -1, 0).row_add(2, -3, 0); (Read: row1 += -1 * row0, row2 += -3 * row0) But since we are not working with classes I can't do that. The equivalent of that is then:
 row_add(row_add(D, 1, -1, 0), 2, -3, 0); which is a lot less pretty than just doing two seperate lines. 
 
-
+Inverse could be better by adjusting rref such that it simply does the same row operations on two seperate matrixes rather than copying them into one big matrix and then reading the result from that.

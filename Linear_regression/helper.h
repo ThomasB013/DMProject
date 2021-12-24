@@ -24,12 +24,15 @@ matrix operator/(matrix&& B, double v);
 
 matrix operator*(const matrix& A, const matrix& B) /*throws(non_matching_dim)*/;
 
+matrix identity(matrix::size_type n);
+
 //For gaussian elimination.
 void row_add(matrix& A, matrix::size_type r1, double c, matrix::size_type r2); //r1 += c * r2.
+void row_multiply(matrix& A, matrix::size_type r, double c);
 void row_swap(matrix& A, matrix::size_type r1, matrix::size_type r2);
 
-matrix get_rref(const matrix& A);
+matrix get_rref(const matrix& A); //Reduced Row Echelon Form
 void to_rref(matrix& A);
 
-matrix inv(const matrix& A) /*throws(non_invertible)*/;
+matrix inv(const matrix& A) /*throws(non_invertible, non_square)*/;
 

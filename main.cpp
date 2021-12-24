@@ -4,17 +4,29 @@
 #include "Matrix/matrix.h"
 using namespace std;
 
-template<typename T>
-void print(My_vec<T> v){
-    for(const auto x : v)
-        cout << x << ' ';
-    cout << '\n';
-}
+
+
+struct data_frame {
+    My_vec<std::string> col_names;
+    Matrix<double> data;
+};
+
+
+#include "Linear_regression/helper.h"
+//#include "Linear_regression/test2.h"
 
 int main(){
-    
-    //My_vec<My_vec<int>> a {v1, v2};
-    Matrix<int> A {{1, 2}, {3, 4}};
+    matrix A {{1, 2}, {3, 4}};
+    matrix B {{1, 2}, {3, 4}};
+    cout << B + A + A + B;
+    cout << 4 * B;
+
+    cout << B * A;
+
+    cout << A.col_select({0, 0, 1, 1});
+    cout << A.col_select({0, 0, 1, 1}).t();
+
+   /*Matrix<int> A {{1, 2}, {3, 4}};
     cout << A;
     cout << std::boolalpha << A.is_rect() << '\t' << A.is_square() << '\n';
 
@@ -33,16 +45,5 @@ int main(){
     cout << D;
 
     cout << std::boolalpha << (B == D);
-
-
-    //cout << std::boolalpha << B.is_rect() << '\t' << B.is_square() << '\n';
-//    Matrix<int> A {{1, 2}, {3, 4}};
-
-    //for(const auto& r : A.data){
-    //    for(int x : r){
-    //        cout << x << ' ';
-    //    }
-    //    cout << '\n';
-    //}
-    
+*/
 }

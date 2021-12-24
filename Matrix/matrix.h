@@ -30,7 +30,7 @@ struct Matrix{
     using const_iterator = typename vector<vector<T>>::const_iterator;
 
     Matrix() : data{vector<vector<T>>(0, vector<T>(0))} {}
-    Matrix(size_type rows, size_type cols) : data{vector<vector<T>>(rows, vector<T>(cols))} {}
+    Matrix(size_type rows, size_type cols, const T& val = T{}) : data{vector<vector<T>>(rows, vector<T>(cols, val))} {}
     Matrix(const vector<vector<T>>& d) :data{d} {}
     Matrix(std::initializer_list<vector<T>> d) :data{d} {}
 
@@ -62,6 +62,8 @@ struct Matrix{
 
     Matrix<T> row_select(const vector<size_type>& selection) const;
     Matrix<T> rows(const vector<bool>& selection) const /*throw(non_matching_row_dim)*/;
+
+    Matrix<T> t() const;
 
     vector<vector<T>> data;
 };
@@ -168,4 +170,13 @@ Matrix<T> Matrix<T>::rows(const vector<bool>& selection) const {
             ++i;
         }
     return ans;    
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::t() const {
+    Matrix<T> ans(col_count(), row_count());
+    for(size_type i = 0; i != row_count(); ++i)
+        for(size_type j = 0; j != col_count(); ++j)
+            ans[j][i] = (*this)[i][j];
+    return ans;
 }

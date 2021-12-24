@@ -1,6 +1,6 @@
 This file keeps track of design choices.
 
-I keep everything in a .h because of linking issues. The only thing I found so far is doing tricks as Matrix<int> in a header file if you need matrix, but I don't like this.
+I keep everything in a .h because of linking issues. The only thing I found so far is doing tricks as Matrix/int/ in a header file if you need matrix for integers, but I don't like this.
 
 Regarding Matrix.h
 1. A matrix is a collection of rows. (Or rows of rows.)

@@ -47,7 +47,8 @@ int main(){
     Linear_regresser lr(y_data, x_data);
     lr.fit();
 
-    cout << lr.get_coeff();
+    cout << y_data;
+    cout << lr.predict({0, 0, 0, 0, 1});
 
     return 0;
 }

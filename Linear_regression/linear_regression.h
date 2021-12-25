@@ -8,6 +8,8 @@ public:
 
     const matrix& fit();
     const matrix& get_coeff() const;
+    matrix predict(const matrix& X) const;
+    matrix predict(const matrix::vector<double>& X) const;
 private:
     matrix coeff;
     const matrix& X;

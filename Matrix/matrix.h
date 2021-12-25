@@ -127,7 +127,7 @@ Matrix<T> Matrix<T>::cols(const vector<bool>& selection) const {
     
     size_type col_size = 0;
     for (bool b : selection)
-        if (b)
+        if (b) //Seems better than pushing_back or wasting allocated memory.
             col_size++;
 
     Matrix<T> ans(row_count(), col_size);
@@ -159,7 +159,7 @@ Matrix<T> Matrix<T>::rows(const vector<bool>& selection) const {
     
     size_type row_size = 0;
     for (bool b : selection)
-        if (b) //Seems better than pushing_back or wasting allocated memory.
+        if (b) 
             row_size++;
     
     Matrix<T> ans (row_size, col_count());

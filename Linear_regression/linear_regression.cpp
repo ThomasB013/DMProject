@@ -17,3 +17,7 @@ const matrix& Linear_regresser::fit() {
 const matrix& Linear_regresser::get_coeff() const {
     return coeff;
 }
+
+matrix Linear_regresser::predict(const matrix& X) const {
+    return X*coeff;
+}

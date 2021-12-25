@@ -1,8 +1,10 @@
+#pragma once
+
 #include "../Matrix/matrix.h"
 
 using matrix = Matrix<double>;
 
-struct non_invertible : std::exception {};
+struct non_invertible : std::runtime_error { non_invertible(const char* msg) : std::runtime_error(msg) {}};
 
 const double EPS = 1e-09;
 
@@ -36,3 +38,7 @@ void to_rref(matrix& A);
 
 matrix inv(const matrix& A) /*throws(non_invertible, non_square)*/;
 
+matrix::vector<double> col_means(const matrix& A);
+matrix::vector<double> col_var(const matrix& A, const matrix::vector<double>& col_means);
+matrix::vector<double> col_mins(const matrix& A);
+matrix::vector<double> col_max(const matrix& A);

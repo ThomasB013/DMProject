@@ -5,62 +5,49 @@
 using namespace std;
 #include <iomanip>
 
+#include "Linear_regression/data_frame.h"
 
-struct data_frame {
-    My_vec<std::string> col_names;
-    Matrix<double> data;
-};
-
-
-#include "Linear_regression/helper.h"
-//#include "Linear_regression/test2.h"
-
-
+#include "Linear_regression/linear_regression.h"
 
 int main(){
-    /*matrix A {{1, 2}, {3, 4}};
-    matrix B {{1, 2}, {3, 4}};
-    cout << B + A + A + B;
-    cout << 4 * B;
-
-    auto C { 4 * B };
-
-    auto Z = C;
-    cout << "true: " << (Z == 4 * B) << '\n';
     
-    cout << B * A;
 
-    cout << A.col_select({0, 0, 1, 1});
-    cout << A.col_select({0, 0, 1, 1}).t();
-*/
+
     matrix D {
-        {1, 3, 1, 9},
-        {1, 1, 1, 1},
-        {3, 11, 5, 35},
-        {4, 3, 2, 1}};
-    cout << D;
-
-
-
-    cout << "RREF: \n" << get_rref(D);
+       {3, 6},
+       {5, 7},
+       {-10, -7},
+       {-14, 13},
+       {-5, 10},
+       {-14, 12},
+       {-11, 3},
+        {0, 5}
+    };
     
 
+    data_frame frame;
+    frame.data = D;
+    frame.col_names = {"x", "y"};
+    cout << frame;   
+    print_summary(cout, frame);
+    //{""}
 
-    cout << "Inv: \n" << inv(D);
-    cout << "Inv * A:\n" << inv(D) * D;
+    const auto y_data = D.col_select(frame.get_indices({"y"}));
+    auto x_data = D.col_select(frame.get_indices({"x"}));
+    for(auto& row : x_data){
+        row.push_back(row[0]*row[0]*row[0]).push_back(row[0]*row[0]).push_back(row[0]).push_back(1);
+        row[0] *= row[0] * row[0] * row[0];
+    }
+    
+    data_frame x_d;
+    x_d.data = x_data;
+    x_d.col_names = {"x^4", "x^3", "x^2", "x^1", "b"};
+    cout << x_d;
+
+    Linear_regresser lr(y_data, x_data);
+    lr.fit();
+
+    cout << lr.get_coeff();
 
     return 0;
-    cout << D;
-    row_multiply(D, 1, 1/D[1][1]);
-    //D.row_add(1, -1, 0).row_add(2, -3, 0);
-    cout << D;
-    row_add(D, 0, -D[0][1]/D[1][1], 1);
-    row_add(D, 2, -D[2][1]/D[1][1], 1);
-    cout << D;
-    row_swap(D, 1, 1);
-    cout << D;
-
-  //  cout << scientific << setw(12) << 14124.242422452266 << " f\n";
-
-  //  cout << boolalpha << (1/5 - 5 * 1 / 7 * (1/(25*7)) == 0);
 }

@@ -1,6 +1,7 @@
 #include "helper.h"
 
 #include <utility>
+#include <limits>
 
 bool iin(double v, double n, double e) { 
     return (n - e < v && v < n + e);
@@ -25,7 +26,7 @@ matrix operator+(matrix&& A, const matrix& B) {
 
 matrix operator+(const matrix& A, matrix&& B) {
     if (A.row_count() != B.row_count() || A.col_count() != B.col_count())
-        throw non_matching_col_row_dim {};
+        throw non_matching_col_row_dim {"To execute A+B matrix A and B need to have matching dimensions."};
     for (matrix::size_type i = 0; i != A.row_count(); ++i)
         for(matrix::size_type j = 0; j != A.col_count(); ++j)
             B[i][j] += A[i][j];
@@ -43,7 +44,7 @@ matrix operator-(matrix&& A, const matrix& B) {
 
 matrix operator-(const matrix& A, matrix&& B) {
     if (A.row_count() != B.row_count() || A.col_count() != B.col_count())
-        throw non_matching_col_row_dim {};
+        throw non_matching_col_row_dim {"To execute A-B matrix A and B need to have matching dimensions."};
     for (matrix::size_type i = 0; i != A.row_count(); ++i)
         for(matrix::size_type j = 0; j != A.col_count(); ++j)
             B[i][j] -= A[i][j];
@@ -76,7 +77,7 @@ matrix operator/(matrix&& B, double v) {
 
 matrix operator*(const matrix& A, const matrix& B) {
     if (A.col_count() != B.row_count())
-        throw non_matching_dim {};
+        throw non_matching_dim {"To execute A*B matrix A's column count needs to match matrix B's row count."};
     matrix ans {A.row_count(), B.col_count(), 0};
     for(matrix::size_type i = 0; i != ans.row_count(); ++i)
         for(matrix::size_type j = 0; j != ans.col_count(); ++j)
@@ -144,7 +145,7 @@ void to_rref(matrix& A) {
 
 matrix inv(const matrix& A) {/*throws(non_invertible, non_square)*/
     using st = matrix::size_type;
-    A.assert_square();
+    A.assert_square("Only a square matrix can be inverted.");
 
     const st N = A.row_count();
     matrix A_I(N, 2 * N, 0);
@@ -156,10 +157,44 @@ matrix inv(const matrix& A) {/*throws(non_invertible, non_square)*/
         }
     to_rref(A_I);
     if (!is_one(A_I[N-1][N-1])) //Safely assume N >= 1.
-        throw non_invertible {};
+        throw non_invertible {"Inv() failed because the matrix was not full rank."};
 
     matrix::vector<st> v(A.col_count());
     for (st i = 0; i != N; ++i)
         v[i] = N + i;
     return A_I.col_select(v);
+}
+
+matrix::vector<double> col_means(const matrix& A) {
+    matrix::vector<double> means(A.col_count(), 0);
+    for (matrix::size_type j = 0; j != A.col_count(); ++j){
+        for (matrix::size_type i = 0; i != A.row_count(); ++i)
+            means[j] += A[i][j];
+        means[j] /= A.row_count();
+    }
+    return means;
+}
+
+matrix::vector<double> col_var(const matrix& A, const matrix::vector<double>& col_means) {
+    matrix::vector<double> vars(A.col_count(), 0);
+    for (matrix::size_type j = 0; j != A.col_count(); ++j){
+        for (matrix::size_type i = 0; i != A.row_count(); ++i)
+            vars[j] += (A[i][j] - col_means[j]) * (A[i][j] - col_means[j]);
+        vars[j] /= (A.row_count() - 1);
+    }
+    return vars;
+}
+matrix::vector<double> col_mins(const matrix& A) {
+    matrix::vector<double> mins(A.col_count(), std::numeric_limits<double>::max());
+    for (matrix::size_type j = 0; j != A.col_count(); ++j)
+        for (matrix::size_type i = 0; i != A.row_count(); ++i)
+            mins[j] = std::min(mins[j], A[i][j]);
+    return mins;
+}
+matrix::vector<double> col_max(const matrix& A) {
+    matrix::vector<double> max(A.col_count(), std::numeric_limits<double>::min());
+    for (matrix::size_type j = 0; j != A.col_count(); ++j)
+        for (matrix::size_type i = 0; i != A.row_count(); ++i)
+            max[j] = std::max(max[j], A[i][j]);
+    return max;
 }

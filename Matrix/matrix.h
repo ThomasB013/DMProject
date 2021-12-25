@@ -2,18 +2,18 @@
 
 #include "my_vec.h"
 #include <vector>
-#include <iostream>
+#include <string>
 #include <exception>
 
-struct bad_dimension : std::exception {};
-struct non_rect : bad_dimension {};
-struct non_square : bad_dimension {};
-struct no_rows : bad_dimension {};
+struct bad_dimension : std::runtime_error { bad_dimension(const std::string& msg) : std::runtime_error {msg} {}};
+struct non_rect : bad_dimension { non_rect(const std::string& msg) : bad_dimension{msg} {}};
+struct non_square : bad_dimension { non_square(const std::string& msg) : bad_dimension{msg} {}};
+struct no_rows : bad_dimension { no_rows(const std::string& msg) : bad_dimension{msg} {}};
 
-struct non_matching_dim : bad_dimension {};
-struct non_matching_row_dim : non_matching_dim {};
-struct non_matching_col_dim : non_matching_dim {};
-struct non_matching_col_row_dim : non_matching_dim {};
+struct non_matching_dim : bad_dimension { non_matching_dim(const std::string& msg) : bad_dimension{msg} {}};
+struct non_matching_row_dim : non_matching_dim { non_matching_row_dim(const std::string& msg) : non_matching_dim{msg} {}};
+struct non_matching_col_dim : non_matching_dim { non_matching_col_dim(const std::string& msg) : non_matching_dim{msg} {}};
+struct non_matching_col_row_dim : non_matching_dim { non_matching_col_row_dim(const std::string& msg) : non_matching_dim{msg} {}};
 
 template<typename T>
 struct Matrix{
@@ -37,9 +37,9 @@ struct Matrix{
 
     size_type row_count() const { return data.size(); }
     size_type col_count() const { /*throw(no_rows)*/
-        if (row_count() ==0) throw no_rows {}; return data[0].size(); }
+        if (row_count() ==0) throw no_rows {"Cannot give col count of a matrix with row count equal to zero."}; return data[0].size(); }
     size_type get_col_count() const { /*throw(no_rows, non_rect)*/
-        if (row_count() == 0) throw no_rows {}; assert_rect(); return data[0].size(); };
+        if (row_count() == 0) throw no_rows {"Cannot give col count of a matrix with row count equal to zero"}; assert_rect(); return data[0].size(); };
 
     iterator begin() { return data.begin(); }
     iterator end() { return data.end(); }
@@ -53,9 +53,9 @@ struct Matrix{
     const_reference operator[](size_type i) const { return data[i]; }
 
     bool is_rect() const;
-    void assert_rect() const /*throw(non_rect)*/;
+    void assert_rect(const std::string& msg ="") const /*throw(non_rect)*/;
     bool is_square() const;
-    void assert_square() const /*throw(non_square)*/;
+    void assert_square(const std::string& msg ="") const /*throw(non_square)*/;
 
     Matrix<T> col_select(const vector<size_type>& selection) const;
     Matrix<T> cols(const vector<bool>& selection) const /*throw(non_matching_col_dim)*/;
@@ -90,9 +90,9 @@ bool Matrix<T>::is_rect() const {
 }
 
 template<typename T>
-void Matrix<T>::assert_rect() const {
+void Matrix<T>::assert_rect(const std::string& msg) const {
     if (!is_rect())
-        throw non_rect {};
+        throw non_rect {"assert_rect() failed." + (msg.empty() ? "" : " " + msg)};
 }
 
 template<typename T>
@@ -105,9 +105,9 @@ bool Matrix<T>::is_square() const {
 }
 
 template<typename T>
-void Matrix<T>::assert_square() const {
+void Matrix<T>::assert_square(const std::string& msg) const {
     if (!is_square())
-        throw non_square {};
+        throw non_square {"assert_square() failed." + (msg.empty() ? "" : " " + msg)};
 }
 
 
@@ -123,7 +123,7 @@ Matrix<T> Matrix<T>::col_select(const vector<size_type>& selection) const {
 template<typename T>
 Matrix<T> Matrix<T>::cols(const vector<bool>& selection) const {
     if (col_count() != selection.size())
-        throw non_matching_col_dim {};
+        throw non_matching_col_dim {"For boolean selection of columns the size of the selection vector has to match the column count."};
     
     size_type col_size = 0;
     for (bool b : selection)
@@ -155,7 +155,7 @@ Matrix<T> Matrix<T>::row_select(const vector<size_type>& selection) const {
 template<typename T>
 Matrix<T> Matrix<T>::rows(const vector<bool>& selection) const {
     if (row_count() != selection.size())
-        throw non_matching_row_dim{};
+        throw non_matching_row_dim{"For boolean selection of rows the size of the selection vector has to match the row count."};
     
     size_type row_size = 0;
     for (bool b : selection)

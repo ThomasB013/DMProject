@@ -9,7 +9,6 @@
 const size_t GROWING_RATIO = 2;
 const size_t DEFAULT_SIZE = 4;
 
-
 template<typename T, typename A = std::allocator<T>>
 class My_vec{ 
 public:
@@ -166,7 +165,7 @@ My_vec<T, A>& My_vec<T, A>::operator=(const My_vec<T, A>& v) {
 template<typename T, typename A>
 My_vec<T, A>& My_vec<T, A>::push_back(T&& val) {
     if (b.last == b.space)
-        resize(max(DEFAULT_SIZE, size() * GROWING_RATIO));
+        resize(std::max(DEFAULT_SIZE, size() * GROWING_RATIO));
     *b.last = val;
     b.last++;
     return *this;

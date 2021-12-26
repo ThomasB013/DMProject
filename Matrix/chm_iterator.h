@@ -178,7 +178,7 @@ public:
 	const_Chm_iterator operator+(difference_type n) const; 
 	const_Chm_iterator operator-(difference_type n) const;
 private:
-	pointer p;
+	const_pointer p;
 };
 
 template<typename T>

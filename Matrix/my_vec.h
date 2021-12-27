@@ -166,10 +166,12 @@ template<typename T, typename A>
 My_vec<T, A>& My_vec<T, A>::push_back(T&& val) {
     if (b.last == b.space)
         resize(std::max(DEFAULT_SIZE, size() * GROWING_RATIO));
-    *b.last = val;
+    std::allocator_traits<A>::construct(b.alloc, b.last, val); 
     b.last++;
     return *this;
 }
+
+#include <iostream>
 
 template<typename T, typename A>
 My_vec<T, A>& My_vec<T, A>::push_back(const T& val) {
@@ -182,7 +184,7 @@ My_vec<T, A>& My_vec<T, A>::pop_back() {
     if (b.last == b.elem) //This also checks for nullpointers.
         return *this;
     b.last--;
-    b.last->~T();
+    std::allocator_traits<A>::destroy(b.alloc, b.last);
     return *this;
 }
 
@@ -199,7 +201,7 @@ My_vec<T, A>& My_vec<T, A>::reserve(size_type n) {
 template<typename T, typename A>
 void My_vec<T, A>::destroy_elements() {
     for(auto p = b.elem; p != b.last; ++p)
-        p->~T();
+        std::allocator_traits<A>::destroy(b.alloc, p);
 }
 
 template<typename T, typename A>

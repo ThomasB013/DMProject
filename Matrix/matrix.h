@@ -36,9 +36,9 @@ struct Matrix{
 
 
     size_type row_count() const { return data.size(); }
-    size_type col_count() const { /*throw(no_rows)*/
+    size_type col_count() const {
         if (row_count() ==0) throw no_rows {"Cannot give col count of a matrix with row count equal to zero."}; return data[0].size(); }
-    size_type get_col_count() const { /*throw(no_rows, non_rect)*/
+    size_type get_col_count() const {
         if (row_count() == 0) throw no_rows {"Cannot give col count of a matrix with row count equal to zero"}; assert_rect(); return data[0].size(); };
 
     iterator begin() { return data.begin(); }
@@ -53,15 +53,15 @@ struct Matrix{
     const_reference operator[](size_type i) const { return data[i]; }
 
     bool is_rect() const;
-    void assert_rect(const std::string& msg ="") const /*throw(non_rect)*/;
+    void assert_rect(const std::string& msg ="") const;
     bool is_square() const;
-    void assert_square(const std::string& msg ="") const /*throw(non_square)*/;
+    void assert_square(const std::string& msg ="") const;
 
     Matrix<T> col_select(const vector<size_type>& selection) const;
-    Matrix<T> cols(const vector<bool>& selection) const /*throw(non_matching_col_dim)*/;
+    Matrix<T> cols(const vector<bool>& selection) const;
 
     Matrix<T> row_select(const vector<size_type>& selection) const;
-    Matrix<T> rows(const vector<bool>& selection) const /*throw(non_matching_row_dim)*/;
+    Matrix<T> rows(const vector<bool>& selection) const;
 
     Matrix<T> t() const;
 

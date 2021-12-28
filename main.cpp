@@ -9,46 +9,36 @@ using namespace std;
 
 #include "Linear_regression/linear_regression.h"
 
+#include <algorithm>
+
+#include "Linear_regression/helper.h"
+
+double square(double x){
+    return x*x;
+}
+
+
+
 int main(){
+    double t;
+    int freedom;
+    data_frame f {"C:\\Users\\thoma\\Documents\\Computing Science\\Year 2\\Semester 1\\Data Mining\\DMProject\\data.txt"};
+    
+    for (auto& row : f.data)
+        row.push_back(1);
+    
+    f.col_names.push_back("cons");
+
+
+    cout << f << '\n';
     
 
+    //cout << f.data.row_count();
 
-    matrix D {
-       {3, 6},
-       {5, 7},
-       {-10, -7},
-       {-14, 13},
-       {-5, 10},
-       {-14, 12},
-       {-11, 3},
-        {0, 5}
-    };
-    
-
-    data_frame frame;
-    frame.data = D;
-    frame.col_names = {"x", "y"};
-    cout << frame;   
-    print_summary(cout, frame);
-    //{""}
-
-    const auto y_data = D.col_select(frame.get_indices({"y"}));
-    auto x_data = D.col_select(frame.get_indices({"x"}));
-    for(auto& row : x_data){
-        row.push_back(row[0]*row[0]*row[0]).push_back(row[0]*row[0]).push_back(row[0]).push_back(1);
-        row[0] *= row[0] * row[0] * row[0];
-    }
-    
-    data_frame x_d;
-    x_d.data = x_data;
-    x_d.col_names = {"x^4", "x^3", "x^2", "x^1", "b"};
-    cout << x_d;
-
-    Linear_regresser lr(y_data, x_data);
-    lr.fit();
-
-    cout << y_data;
-    cout << lr.predict({0, 0, 0, 0, 1});
+    //print_summary(cout, f);
+    //f.regress("wdi_lifexp", "cons p_polity2 gle_rgdpc");
+    f.regress("csat", "expense percent income high college cons");
+    //f.regress("sat_system", "female age high_educ inc_categ cons");
 
     return 0;
 }

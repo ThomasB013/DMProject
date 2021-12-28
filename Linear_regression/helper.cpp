@@ -2,6 +2,9 @@
 
 #include <utility>
 #include <limits>
+#include <math.h>
+
+const double PI = std::atan(1)*4;
 
 bool iin(double v, double n, double e) { 
     return (n - e < v && v < n + e);
@@ -33,6 +36,14 @@ matrix operator+(const matrix& A, matrix&& B) {
     return B;
 }
 
+matrix operator+(const matrix& A, double b) {
+    auto copy {A};
+    for(auto& row : copy)
+        for (double& x : row)
+            x += b;
+    return copy;
+}
+
 matrix operator-(const matrix& A, const matrix& B) {
     matrix copy {B};
     return operator-(A, std::move(copy));
@@ -49,6 +60,14 @@ matrix operator-(const matrix& A, matrix&& B) {
         for(matrix::size_type j = 0; j != A.col_count(); ++j)
             B[i][j] -= A[i][j];
     return B;
+}
+
+matrix operator-(const matrix& A, double b) {
+    auto copy {A};
+    for(auto& row : copy)
+        for (double& x : row)
+            x -= b;
+    return copy;
 }
 
 matrix operator*(double v, const matrix& B){
@@ -184,6 +203,14 @@ matrix::vector<double> col_var(const matrix& A, const matrix::vector<double>& co
     }
     return vars;
 }
+
+matrix::vector<double> col_std_dev(const matrix& A, const matrix::vector<double>& col_means) { 
+    auto vars = col_var(A, col_means);
+    for (double& d : vars)
+        d = std::sqrt(d);
+    return vars;
+}
+
 matrix::vector<double> col_mins(const matrix& A) {
     matrix::vector<double> mins(A.col_count(), std::numeric_limits<double>::max());
     for (matrix::size_type j = 0; j != A.col_count(); ++j)
@@ -191,10 +218,99 @@ matrix::vector<double> col_mins(const matrix& A) {
             mins[j] = std::min(mins[j], A[i][j]);
     return mins;
 }
+
 matrix::vector<double> col_max(const matrix& A) {
     matrix::vector<double> max(A.col_count(), std::numeric_limits<double>::min());
     for (matrix::size_type j = 0; j != A.col_count(); ++j)
         for (matrix::size_type i = 0; i != A.row_count(); ++i)
             max[j] = std::max(max[j], A[i][j]);
     return max;
+}
+
+double sum_squared(const matrix& a) {
+    if (a.col_count() != 1)
+        throw bad_dimension {"For sum_squared the input need to have dimension n x 1."}; 
+    
+    double sum = 0;
+    for(const auto& r : a)
+        sum += r[0] * r[0]; 
+
+    return sum;
+}
+
+double sum_diff_squared(const matrix& a, const matrix& b) {
+    if (a.col_count() != 1 || b.col_count() != 1)
+        throw bad_dimension {"For diff_squared both input matrices need to have dimension n x 1."};
+    if (a.row_count() != b.row_count())
+        throw non_matching_row_dim {"For diff_squared both input matrices need to have the same number of observations."};
+
+    return sum_squared(a - b);
+}
+
+
+double integral(std::function<double(double)> f, double a, double b, int n) {
+    double dx = (b - a) / n;
+    double sum = 0;
+    for (int i = 0; i < n; ++i) {
+        double height = f(a + i*dx + dx/2);
+        sum += height * dx;
+    } 
+    return sum;
+}
+
+double first_part_student_t(int freedom){
+    return std::tgamma((freedom + 1.0)/2.0) / (std::sqrt(PI * freedom) * std::tgamma(freedom/2.0));
+}
+
+double second_part_student_t(int freedom, double x){
+    return std::pow(1 + x*x/freedom, -(freedom+1.0)/2.0);
+}
+
+double student_t_pdf(int freedom, double x) {
+    return first_part_student_t(freedom) * second_part_student_t(freedom, x);
+}
+
+double student_t_cdf(int freedom, double a, double b) {
+    const double FIRST = first_part_student_t(freedom);
+    
+    const double INT = integral([=](double x) -> double {
+        return second_part_student_t(freedom, x);
+    }, a, b);
+       
+    return INT * FIRST;
+}
+
+double two_sided_t_test(int freedom, double t){
+    return 1 - 2 * student_t_cdf(freedom, 0, std::abs(t));
+}
+
+double student_t_0_975(int freedom) {
+    const double VALUES_F_30[] {
+        12.71, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262, 2.228, 
+        2.201, 2.179, 2.16, 2.145, 2.131, 2.12, 2.11, 2.101, 2.093, 2.086, 
+        2.08, 2.074, 2.069, 2.064, 2.06, 2.056, 2.052, 2.048, 2.045, 2.042};
+    const double VALUES_F_40_60_80_100[] {2.021, 2, 1.99, 1.984};
+    const double F_1000 = 1.962;
+    const double Z =  1.96;
+    if (freedom <= 30)
+        return VALUES_F_30[freedom - 1];
+    if (freedom <= 40) {//between 30 en 40.
+        const double F_30 = VALUES_F_30[29];
+        const double F_40 = VALUES_F_40_60_80_100[0];
+        const double alpha = (freedom - 30) / 10.0;
+        return F_30 * (1 - alpha) + F_40 * alpha;
+    }
+    if (freedom < 100) {
+        const int L = (freedom-40)/20, R = (freedom-40)/20 + 1;
+        const double F_L = VALUES_F_40_60_80_100[L];
+        const double F_R = VALUES_F_40_60_80_100[R];
+        const double alpha = (freedom % 20) / 20.0;
+        return F_L * (1 - alpha) + F_R * alpha;
+    }
+    if (freedom <= 1000) {//between 30 en 40.
+        const double F_100 = VALUES_F_40_60_80_100[3];
+        const double alpha = (freedom - 100) / 900.0;
+        return F_100 * (1 - alpha) + F_1000 * alpha;
+    }
+    return Z;
 }

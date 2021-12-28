@@ -171,8 +171,6 @@ My_vec<T, A>& My_vec<T, A>::push_back(T&& val) {
     return *this;
 }
 
-#include <iostream>
-
 template<typename T, typename A>
 My_vec<T, A>& My_vec<T, A>::push_back(const T& val) {
     T copy {val};

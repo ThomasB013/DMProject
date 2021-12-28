@@ -3,6 +3,9 @@
 #include "../Matrix/matrix.h"
 #include <functional>
 
+/*  This file contains helper functions for computing with doubles.     
+*/
+
 using matrix = Matrix<double>;
 
 struct non_invertible : std::runtime_error { non_invertible(const char* msg) : std::runtime_error(msg) {}};

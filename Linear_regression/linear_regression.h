@@ -21,12 +21,12 @@ struct interval {
     double right;
 };
 
+
 class Linear_regresser {
 public:
     explicit Linear_regresser();
     void fit(const matrix& y_data, const matrix& X_data);
   
-
     const matrix& get_coeff() const;
     double get_est_sd() const;
     double get_SST() const;
@@ -57,7 +57,6 @@ public:
     matrix::vector<interval> get_95_conf_predict(const matrix& obs) const; //In this case obs needs to be a 1 times k matrix.
 
 private:
-    bool fitted;
     void assert_fitted() const;
     void set_coeff_std_dev();
     matrix XtX_inv;

@@ -4,6 +4,9 @@
 #include <iostream>
 #include "helper.h"
 
+/*  This file contains a data_frame which provides user friendly regression analysis.
+*/
+
 struct col_name_not_found : std::runtime_error { col_name_not_found(const std::string& msg) : std::runtime_error{msg} {}};
 
 struct data_frame {

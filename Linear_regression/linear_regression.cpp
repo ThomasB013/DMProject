@@ -2,6 +2,10 @@
 
 #include <math.h>
 
+bool interval::contains(double v) const {
+    return left <= v && v <= right;
+}
+
 Linear_regresser::Linear_regresser() {}
 
 void Linear_regresser::fit(const matrix& y_data, const matrix& X_data) {

@@ -15,6 +15,8 @@ struct not_fitted : std::runtime_error { not_fitted(std::string msg) :std::runti
 struct interval {
     interval() {}
     interval(double l, double r) :left(l), right(r) {}
+    bool contains(double v) const;
+    
     double left;
     double right;
 };

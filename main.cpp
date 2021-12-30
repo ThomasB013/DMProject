@@ -8,19 +8,7 @@ void csat_example();
 void data_frame_example();
 void outlier_correct_example();
 void outlier_incorrect_example();
-
-//The see 
-
-
-
 void gen_data_points(string file_name, int fun_points =200, int ran_points =25, int var =25, int max_x =27, int max_y =150);
-
-
-
-
-
-
-
 
 int main(){
     csat_example();
@@ -30,18 +18,6 @@ int main(){
     outlier_incorrect_example();
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 void csat_example() {
     cout << "\n\n****************************************************************\n";
@@ -59,7 +35,7 @@ void csat_example() {
     print_summary(df, cout); 
     cout << "\n\nRegression Ouput:\n";
 
-    //Add an intercept columnn.
+    //Add an intercept columnn named cons.
     df.add_col("cons", "1");
     df.regress("csat", "expense percent income high college cons");
 
@@ -247,6 +223,7 @@ void outlier_incorrect_example() {
     
 
     df.add_col("cons", "1");
+    //Fit y = ax + b.
     df.regress("y", "x cons");
     
     //We try to find outliers with a wrong model.

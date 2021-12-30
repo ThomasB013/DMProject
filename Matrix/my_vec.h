@@ -47,6 +47,9 @@ public:
     My_vec<T, A>& push_back(T&& val);
     My_vec<T, A>& push_back(const T& val);
     My_vec<T, A>& pop_back();
+    
+    const_reference back() const;
+    reference back();
 
     My_vec<T, A>& reserve(size_type n);
 
@@ -184,6 +187,16 @@ My_vec<T, A>& My_vec<T, A>::pop_back() {
     b.last--;
     std::allocator_traits<A>::destroy(b.alloc, b.last);
     return *this;
+}
+
+template<typename T, typename A>
+typename My_vec<T, A>::const_reference My_vec<T, A>::back() const {
+    return *(b.last - 1);
+}
+
+template<typename T, typename A>
+typename My_vec<T, A>::reference My_vec<T, A>::back() {
+    return *(b.last - 1);
 }
 
 template<typename T, typename A>

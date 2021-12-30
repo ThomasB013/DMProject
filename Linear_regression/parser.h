@@ -31,7 +31,7 @@ Some remarks:
 namespace Parse {
     struct parse_error : std::runtime_error { parse_error(const std::string& msg) :std::runtime_error(msg) {}};
 
-    struct col_name_not_found : parse_error { col_name_not_found(const std::string& msg) : parse_error{msg} {}};
+    struct col_name_not_found : parse_error { col_name_not_found(const std::string& msg) : parse_error{"Column name not found: " + msg} {}};
     struct exp_parse_error : parse_error { exp_parse_error(const std::string& exp, const std::string& source, size_t i) : parse_error("Expected " + exp + " at pos " + std::to_string(i) + " in " + source) {}};
     struct invalid_col_name : parse_error { invalid_col_name(const std::string& msg) : parse_error{"Invalid column name: " + msg} {}};
 

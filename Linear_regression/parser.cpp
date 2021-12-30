@@ -91,7 +91,7 @@ Parse::Expression* term(const matrix::vector<std::string>& col_names, const std:
         return new Val { val };
     }//read a column name. And convert to index.
     std::string name;
-    for (; i != s.size() && (std::isalnum(s[i]) || s[i] == '.'); ++i)
+    for (; i != s.size() && (std::isalnum(s[i]) || s[i] == '_'); ++i)
         name += s[i];
 
     size_t ind = Parse::get_index(col_names, name);
@@ -150,7 +150,7 @@ matrix::size_type Parse::index(const matrix::vector<std::string>& col_names, con
 matrix::size_type Parse::get_index(const matrix::vector<std::string>& col_names, const std::string& col_name) {
     const auto POS = index(col_names, col_name);
     if (POS == col_names.size())
-        throw Parse::col_name_not_found {"Column name " + col_name + " not found."};
+        throw Parse::col_name_not_found {col_name};
     return POS;
 }
 

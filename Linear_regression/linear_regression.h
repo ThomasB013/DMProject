@@ -59,7 +59,7 @@ public:
 
     //Repeteadly computes a linear regression model and filters out points for which their real value is not in the 
     //95% confidence interval. Stop condition: less than max(theta, 1) datapoints are found or more than max_iter iterations are done.
-    static matrix::vector<bool> find_outliers(matrix y, matrix X, int theta =1, int max_iter =10);
+    static matrix::vector<int> find_outliers(matrix y, matrix X, int theta =1, int max_iter =10);
     
 private:
     void assert_fitted() const;

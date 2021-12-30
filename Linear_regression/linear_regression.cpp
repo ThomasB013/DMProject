@@ -151,10 +151,10 @@ void remove_observations(matrix& y, matrix& X, matrix::vector<matrix::size_type>
 
 #include <iostream>
 
-matrix::vector<bool> Linear_regresser::find_outliers(matrix y, matrix X, int theta, int max_iter) {
+matrix::vector<int> Linear_regresser::find_outliers(matrix y, matrix X, int theta, int max_iter) {
     assert_right_sizes(y, X);
     
-    matrix::vector<bool> is_normal(y.row_count(), true); //is_normal = not an outlier.
+    matrix::vector<int> pruned(y.row_count(), 0); //is_normal = not an outlier.
     matrix::vector<matrix::size_type> original_id(y.row_count());
     for (matrix::size_type i = 0; i != y.row_count(); ++i)
         original_id[i] = i;
@@ -169,11 +169,11 @@ matrix::vector<bool> Linear_regresser::find_outliers(matrix y, matrix X, int the
         r.fit(y, X, false); //Don't assert in fitting, for computational reasons.
         for (matrix::size_type i = 0; i != y.row_count(); ++i) {
             if (!r.get_95_conf_predict(X[i]).contains(y[i][0])) {
-                is_normal[original_id[i]] = false;
+                pruned[original_id[i]] = cur_iter;
                 remove_observations(y, X, original_id, i);
                 cur_theta++;
             }
         }
     }
-    return is_normal;
+    return pruned;
 }

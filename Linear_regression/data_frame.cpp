@@ -25,11 +25,15 @@ void print_vec(std::ostream& os, const matrix::vector<T>& vec) {
 }
 
 
-data_frame::data_frame(std::string file) {
+data_frame::data_frame(std::string file, bool col_header) {
     std::ifstream is {file};
+    
     std::string header;
+    
+    
     std::getline(is, header);
     std::stringstream s {header};
+
     while (s >> header)
         col_names.push_back(header);
 
@@ -65,31 +69,6 @@ std::ostream& operator<<(std::ostream& os, const data_frame& d) {
     if (os) 
         os.flags(CUR);
     return os;
-}
-
-
-
-void print_summary(std::ostream& os, const data_frame& d) {
-    const auto CUR = set_output_settings(os);
-
-    const auto MAX = col_max(d.data);
-    const auto MIN = col_mins(d.data);
-    const auto MEANS = col_means(d.data);
-    const auto VAR = col_std_dev(d.data, MEANS);
-    
-    os << std::setw(WIDTH) << "Summary" << '\t';
-    print_vec(os, d.col_names);
-    os << std::setw(WIDTH) << "Min" << '\t';
-    print_vec(os, MIN);
-    os << std::setw(WIDTH) << "Max" << '\t';
-    print_vec(os, MAX);
-    os << std::setw(WIDTH) << "Mean" << '\t';
-    print_vec(os, MEANS);
-    os << std::setw(WIDTH) << "Std Dev" << '\t';
-    print_vec(os, VAR);
-    os << std::setw(WIDTH) << "Number of observations: " << d.data.row_count() << '\n';
-    if (os)
-        os.flags(CUR);
 }
 
 matrix::size_type data_frame::index (const std::string& col_name) const {
@@ -150,6 +129,17 @@ void data_frame::regress(std::string explained, std::string explanatory, std::os
         out.flags(CUR);
 }
 
+matrix::vector<int> data_frame::find_outliers(std::string explained, std::string explanatory, int theta, int max_iter) const {
+    std::stringstream str {explanatory};
+    matrix::vector<std::string> cols;
+    for (std::string s; str >> s; )
+        cols.push_back(s);
+    const auto y = this->data.col_select({get_index(explained)});
+    const auto X = this->data.col_select(get_indices(cols));
+
+    return Linear_regresser::find_outliers(y, X, theta, max_iter);
+}
+
 data_frame& data_frame::add_col(std::string name, std::string expr) {
     if (!Parse::Parser::valid_name(name))
         throw Parse::invalid_col_name {name};
@@ -160,4 +150,28 @@ data_frame& data_frame::add_col(std::string name, std::string expr) {
     for (matrix::size_type i = 0; i != data.row_count(); ++i)
         data[i].push_back(p.eval(i, data[i]));
     return *this;
+}
+
+
+void print_summary(const data_frame& d, std::ostream& os) {
+    const auto CUR = set_output_settings(os);
+
+    const auto MAX = col_max(d.data);
+    const auto MIN = col_mins(d.data);
+    const auto MEANS = col_means(d.data);
+    const auto VAR = col_std_dev(d.data, MEANS);
+    
+    os << std::setw(WIDTH) << "Summary" << '\t';
+    print_vec(os, d.col_names);
+    os << std::setw(WIDTH) << "Min" << '\t';
+    print_vec(os, MIN);
+    os << std::setw(WIDTH) << "Max" << '\t';
+    print_vec(os, MAX);
+    os << std::setw(WIDTH) << "Mean" << '\t';
+    print_vec(os, MEANS);
+    os << std::setw(WIDTH) << "Std Dev" << '\t';
+    print_vec(os, VAR);
+    os << std::setw(WIDTH) << "Number of observations: " << d.data.row_count() << '\n';
+    if (os)
+        os.flags(CUR);
 }

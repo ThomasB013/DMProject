@@ -8,24 +8,24 @@
 
 namespace { //Unnamed namespace
 
-struct BinOp : Parse::Expression { //Binary operations
-    BinOp(Expression* left, Expression* right, std::function<double(double, double)> f) : l{left}, r{right}, op{f} {}
-    ~BinOp() { delete l; delete r; }
+struct Bin_Op : Parse::Expression { //Binary operations
+    Bin_Op(Expression* left, Expression* right, std::function<double(double, double)> f) : l{left}, r{right}, op{f} {}
+    ~Bin_Op() { delete l; delete r; }
     double eval(matrix::size_type i, const matrix::vector<double>& row) const { return op(l->eval(i, row), r->eval(i, row)); }
     Expression* l, * r;
     std::function<double(double, double)> op;
 };
 
-struct UnOp : Parse::Expression { //Unary operations
-    UnOp(Expression* exp, std::function<double(double)> f) :e {exp}, op {f} {}
-    ~UnOp() { delete e; }
+struct Un_Op : Parse::Expression { //Unary operations
+    Un_Op(Expression* exp, std::function<double(double)> f) :e {exp}, op {f} {}
+    ~Un_Op() { delete e; }
     double eval(matrix::size_type i, const matrix::vector<double>& row) const { return op(e->eval(i, row)); }
     Expression* e;
     std::function<double(double)> op;
 };
 
-struct LookUp : Parse::Expression { //Look up the value in the row
-    LookUp(matrix::size_type i) : index {i} {}
+struct Look_Up : Parse::Expression { //Look up the value in the row
+    Look_Up(matrix::size_type i) : index {i} {}
     double eval(matrix::size_type i, const matrix::vector<double>& row) const { return row[index]; }
     matrix::size_type index;
 };
@@ -40,100 +40,205 @@ struct Val : Parse::Expression { //Holds a single value.
     double val;
 };
 
-Parse::Expression* expr(const matrix::vector<std::string>& col_names, const std::string& s, size_t& i, unsigned consume);
+enum class Kind {
+    Plus, Minus, Mult, Div, Exp,
+    Br_Open, Br_Close, Col_Index, Row_I,
+    Math_Pi, Math_E, Math_Lg, Math_Sqrt,
+    Numeric, End
+};
+
+struct Token {
+    Token(Kind k) :kind(k) {}
+    Token(Kind k, double v) :kind{k}, value{v} {}
+    Token(Kind k, size_t i) :kind{k}, index{i} {}
+    Kind kind;
+    union {
+        double value;
+        size_t index;
+    };
+};
+
+class Token_Stream {
+public:
+    Token_Stream(const std::string& expr_input, const matrix::vector<std::string>& col_names) {
+        std::stringstream stream {expr_input}; //Read from this.
+
+        for (char c; stream.get(c); ){
+            if (isspace(c)) 
+                continue;
+            
+            if (isdigit(c)) {
+                stream.putback(c);
+                double v;
+                stream >> v;
+                tokens.push_back({Kind::Numeric, (double) v});
+            }
+            else if (Parse::Parser::valid_letter(c)) {
+                std::string s;
+                for (s += c; stream.get(c) && Parse::Parser::valid_letter(c); )
+                    s+= c;
+                if (!stream.eof()) //Meaning we stopped reading because we encountered another character. The putback() is said to ignore the eofbit on cplusplus.com.
+                    stream.putback(c);
+
+                if (s == "pi")
+                    tokens.push_back({Kind::Math_Pi});
+                else if (s == "e")
+                    tokens.push_back({Kind::Math_E});
+                else if (s == "lg")
+                    tokens.push_back({Kind::Math_Lg});
+                else if (s == "sqrt")
+                    tokens.push_back({Kind::Math_Sqrt});
+                else 
+                    tokens.push_back({Kind::Col_Index, (size_t) Parse::get_index(col_names, s)});
+            }
+            else if (c == '$') {
+                if (stream.get(c) && c == 'i')
+                    tokens.push_back({Kind::Row_I});
+                else 
+                    throw Parse::parse_error {"Epected i after $"};
+            }
+            else if (c == '(')
+                tokens.push_back({Kind::Br_Open});
+            else if (c == ')')
+                tokens.push_back({Kind::Br_Close});
+            else if (c == '-')
+                tokens.push_back({Kind::Minus});
+            else if (c == '+')
+                tokens.push_back({Kind::Plus});
+            else if (c == '*')
+                tokens.push_back({Kind::Mult});
+            else if (c == '/')
+                tokens.push_back({Kind::Div});
+            else if (c == '^')
+                tokens.push_back({Kind::Exp});
+            else 
+                throw Parse::parse_error {"Unexpected character: " + c};       
+        }
+        tokens.push_back({Kind::End});
+    }
+
+    //Increments the token pointer to the next one.
+    void consume() {
+        ++i;
+        //I choose to have an end token in the vector rather than returning it so that
+        //If something gows wrong (for example we try to read out of bounds) we get an error message rather than
+        //Always returning Kind::End after reading out of bounds.
+        if (i == tokens.size())
+            throw Parse::parse_error{"Token stream exhausted"};
+    }
+
+    //Returns the current token.
+    Token current() const {
+        if (i == tokens.size())
+            throw Parse::parse_error{"Token stream exhausted"};
+        return tokens[i];
+
+    }
+private:
+    matrix::size_type i { 0 };
+    matrix::vector<Token> tokens;
+};
+
+
+
+Parse::Expression* expr(Token_Stream& ts, bool consume, std::string& err_msg);
 
 /*term = ( + expr + ) | e | pi | $i | 
     lg term | sqrt term | -term
     [a-Z|_][a-Z|0-9|_]* | [0-9]+(.[0-9]+)? */
 
-//Remember that we don't allow column names to start with the reserved names.
-Parse::Expression* term(const matrix::vector<std::string>& col_names, const std::string& s, size_t& i, unsigned consume) { 
-    i += consume;
+Parse::Expression* term(Token_Stream& ts, bool consume, std::string& err_msg) { 
+    if (consume)
+        ts.consume();
     
-    if (i >= s.size())
-        throw Parse::exp_parse_error("term", s, i);
-    //We now now that i is in range. This allows us to use substr(pos, len).
-    if (s[i] == '('){ //( + expr + )
-        Parse::Expression* e = expr(col_names, s, i, 1);
-        if (i < s.size() && s[i] == ')') {
-            ++i; //consume ).
-            return e;
+    Token t = ts.current();
+    if (t.kind == Kind::End) {
+        err_msg += "Expected a term.";
+        return nullptr;
+    }
+    ts.consume(); //For the next we always need to consume.
+    switch (t.kind){
+        case Kind::Br_Open: {
+            Parse::Expression *e = expr(ts, false, err_msg);
+            if (ts.current().kind == Kind::Br_Close){
+                ts.consume();
+                return e;
+            }
+            else {
+                err_msg += "Expected closing brackets.";
+                delete e;
+                return nullptr;
+            }
         }
-        else
-            throw Parse::exp_parse_error("')'", s, i);
+        case Kind::Math_E:
+            return new Val { Helper::MATH_E };
+        case Kind::Math_Pi:
+            return new Val { Helper::MATH_PI };
+        case Kind::Row_I:
+            return new Index {};
+        case Kind::Col_Index:
+            return new Look_Up { t.index };
+        case Kind::Math_Lg:
+            return new Un_Op {term(ts, false, err_msg), [](double x) -> double { return std::log(x); } };
+        case Kind::Math_Sqrt:
+            return new Un_Op {term(ts, false, err_msg), [](double x) -> double { return std::sqrt(x); } };
+        case Kind::Minus:
+            return new Un_Op {term(ts, false, err_msg), std::negate<double>() };
+        case Kind::Numeric:
+            return new Val { t.value };
+        default: {
+            err_msg += "Uncaught token in term parser: " + std::to_string(static_cast<int>(t.kind));
+            return nullptr;
+        }
     }
-    if (s[i] == 'e') { 
-        ++i;
-        return new Val { Helper::MATH_E };
-    }
-    if (s.substr(i, 2) == "pi") {
-        i += 2;
-        return new Val { Helper::MATH_PI };
-    }
-    if (s.substr(i, 2) == "$i"){
-        i += 2;
-        return new Index {};
-    }
-    if (s[i] == '$')
-        throw Parse::exp_parse_error("i after $", s, i);
-    if (s.substr(i, 2) == "lg") 
-        return new UnOp {term(col_names, s, i, 2), [](double x) -> double { return std::log(x); } };
-    if (s.substr(i, 4) == "sqrt")
-        return new UnOp {term(col_names, s, i, 4), [](double x) -> double { return std::sqrt(x); } };
-    if (s[i] == '-')
-        return new UnOp {term(col_names, s, i, 1), std::negate<double>() };
-    if (std::isdigit(s[i])) { //read a numerical value.
-        std::stringstream valBuf;
-        for (; i != s.size() && (std::isdigit(s[i]) || s[i] == '.'); ++i)
-            valBuf << s[i];
-        double val;
-        valBuf >> val;
-        return new Val { val };
-    }//read a column name. And convert to index.
-    std::string name;
-    for (; i != s.size() && (std::isalnum(s[i]) || s[i] == '_'); ++i)
-        name += s[i];
-
-    size_t ind = Parse::get_index(col_names, name);
-    return new LookUp{ ind };
 }
 
 //exp = term ^ exp | term
-Parse::Expression* exp(const matrix::vector<std::string>& col_names, const std::string& s, size_t& i, unsigned consume) {
-    i += consume;
-    Parse::Expression* t = term(col_names, s, i, 0);
-    if (i < s.size() && s[i] == '^')
-        return new BinOp {t, exp(col_names, s, i, 1), [](double x, double n) -> double { return std::pow(x, n); } };
+Parse::Expression* exp(Token_Stream& ts, bool consume, std::string& err_msg) {
+    if (consume)
+        ts.consume();
+    Parse::Expression* t = term(ts, false, err_msg);
+    if (ts.current().kind == Kind::Exp)
+        return new Bin_Op {t, exp(ts, true, err_msg), [](double x, double n) -> double { return std::pow(x, n); } };
     return t;
 }
 
 //mult = exp * mult | exp / mult | exp
-Parse::Expression* mult(const matrix::vector<std::string>& col_names, const std::string& s, size_t& i, unsigned consume) {
-    i += consume;
-    Parse::Expression* l = exp(col_names, s, i, 0);
-    if (i < s.size() && s[i] == '*')
-        return new BinOp {l, mult(col_names, s, i, 1), std::multiplies<double>() };
-    if (i < s.size() && s[i] == '/')
-        return new BinOp {l, mult(col_names, s, i, 1), std::divides<double>() };
-    return l;
+Parse::Expression* mult(Token_Stream& ts, bool consume, std::string& err_msg) {
+    if (consume)
+        ts.consume();
+    Parse::Expression* l = exp(ts, false, err_msg);
+    switch(ts.current().kind){
+        case Kind::Mult:
+            return new Bin_Op {l, mult(ts, true, err_msg), std::multiplies<double>() };
+        case Kind::Div:
+            return new Bin_Op {l, mult(ts, true, err_msg), std::divides<double>() };
+        default:
+            return l;
+    }
 }
 
-
 //sum = mult + sum | mult - sum | mult
-Parse::Expression* sum(const matrix::vector<std::string>& col_names, const std::string& s, size_t& i, unsigned consume) {
-    i += consume;
-    Parse::Expression* l = mult(col_names, s, i, 0);
-    if (i < s.size() && s[i] == '+')
-        return new BinOp {l, sum(col_names, s, i, 1), std::plus<double>() };
-    if (i < s.size() && s[i] == '-')
-        return new BinOp {l, sum(col_names, s, i, 1), std::minus<double>() };
-    return l;
+Parse::Expression* sum(Token_Stream& ts, bool consume, std::string& err_msg) {
+    if (consume)
+        ts.consume();
+    
+    Parse::Expression* l = mult(ts, false, err_msg);
+    switch(ts.current().kind){
+        case Kind::Plus:
+            return new Bin_Op {l, sum(ts, true, err_msg), std::plus<double>() }; 
+        case Kind::Minus:
+            return new Bin_Op {l, sum(ts, true, err_msg), std::minus<double>() };
+        default:
+            return l;
+    }
 }
 
 //expr = sum
-Parse::Expression* expr(const matrix::vector<std::string>& col_names, const std::string& s, size_t& i, unsigned consume) {
-    i += consume;
-    return sum(col_names, s, i, 0);
+Parse::Expression* expr(Token_Stream& ts, bool consume, std::string& err_msg) {
+    if (consume)
+        ts.consume();    
+    return sum(ts, false, err_msg);
 }
 
 }
@@ -155,13 +260,15 @@ matrix::size_type Parse::get_index(const matrix::vector<std::string>& col_names,
 }
 
 Parse::Parser::Parser(const matrix::vector<std::string>& col_names, const std::string& s) {
-    size_t i {0};
+    Token_Stream ts(s, col_names);
+    std::string err_msg;
+    e = expr(ts, false, err_msg);
 
-    std::string s2;
-    for(char c : s)
-        if (!std::isspace(c))
-            s2 += c;
-    e = expr(col_names, s2, i, 0);
+    if (!err_msg.empty()) {
+        delete e;
+        e = nullptr;
+        throw parse_error {err_msg};
+    }
 }
 
 Parse::Parser::~Parser(){
@@ -173,8 +280,12 @@ double Parse::Parser::eval(size_t i, const matrix::vector<double>& row) {
 }
 
 bool Parse::Parser::name_clash(const std::string& name) {
-    return (name.substr(0, 1) == "e" || name.substr(0, 2) == "pi" || 
-        name.substr(0, 2) == "lg" || name.substr(0, 4) == "sqrt");
+    return (name == "e" || name == "pi" || 
+        name == "lg" || name == "sqrt");
+}
+
+bool Parse::Parser::valid_letter(char c) {
+    return std::isalnum(c) || c == '_';
 }
 
 bool Parse::Parser::all_valid_chars(const std::string& name) { //Checks if all characters are valid.
@@ -183,7 +294,7 @@ bool Parse::Parser::all_valid_chars(const std::string& name) { //Checks if all c
     if (std::isdigit(name[0]))
         return false;
     for (char c : name)
-        if (c != '_' && !isalnum(c))
+        if (!valid_letter(c))
             return false;
     return true;
 }

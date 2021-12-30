@@ -8,14 +8,19 @@ bool interval::contains(double v) const {
 
 Linear_regresser::Linear_regresser() {}
 
-void Linear_regresser::fit(const matrix& y_data, const matrix& X_data) {
+void assert_right_sizes(const matrix& y_data, const matrix& X_data){
     X_data.assert_rect("X_data needs to be rectangular.");
     y_data.assert_rect("y_data needs to be rectangular.");
     if (y_data.col_count() != 1)
         throw bad_dimension {"y_data needs to have dimension n x 1."};
     if (y_data.row_count() != X_data.row_count())
         throw bad_dimension {"y_data and X_data need to have the same amount of observations."};
-    
+}
+
+void Linear_regresser::fit(const matrix& y_data, const matrix& X_data, bool assert) {
+    if (assert)
+        assert_right_sizes(y_data, X_data);
+
     n = y_data.row_count();
     k = X_data.col_count();
     XtX_inv = inv(X_data.t()*X_data);
@@ -132,4 +137,43 @@ void Linear_regresser::set_coeff_std_dev() {
     for (matrix::size_type i = 0; i != vec.size(); ++i)
         vec[i] = est_sd * std::sqrt(XtX_inv[i][i]);
     coeff_std_dev = vec;
+}
+
+//Swaps and pop_back
+void remove_observations(matrix& y, matrix& X, matrix::vector<matrix::size_type>& original_id, matrix::size_type i) {
+    std::swap(y[i], y.data.back());
+    y.data.pop_back();
+    std::swap(X[i], X.data.back());
+    X.data.pop_back();
+    std::swap(original_id[i], original_id.back());
+    original_id.pop_back();
+}
+
+#include <iostream>
+
+matrix::vector<bool> Linear_regresser::find_outliers(matrix y, matrix X, int theta, int max_iter) {
+    assert_right_sizes(y, X);
+    
+    matrix::vector<bool> is_normal(y.row_count(), true); //is_normal = not an outlier.
+    matrix::vector<matrix::size_type> original_id(y.row_count());
+    for (matrix::size_type i = 0; i != y.row_count(); ++i)
+        original_id[i] = i;
+
+    int cur_iter = 0;
+    int cur_theta = theta;
+    
+    while (y.row_count() != 0 && cur_iter < max_iter && cur_theta >= theta) {
+        cur_iter++;
+        cur_theta = 0;
+        Linear_regresser r;
+        r.fit(y, X, false); //Don't assert in fitting, for computational reasons.
+        for (matrix::size_type i = 0; i != y.row_count(); ++i) {
+            if (!r.get_95_conf_predict(X[i]).contains(y[i][0])) {
+                is_normal[original_id[i]] = false;
+                remove_observations(y, X, original_id, i);
+                cur_theta++;
+            }
+        }
+    }
+    return is_normal;
 }

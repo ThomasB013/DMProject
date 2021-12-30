@@ -25,7 +25,7 @@ struct interval {
 class Linear_regresser {
 public:
     explicit Linear_regresser();
-    void fit(const matrix& y_data, const matrix& X_data);
+    void fit(const matrix& y_data, const matrix& X_data, bool assert =true);
   
     const matrix& get_coeff() const;
     double get_est_sd() const;
@@ -56,6 +56,11 @@ public:
     interval get_95_conf_predict(const matrix::vector<double>& obs) const;
     matrix::vector<interval> get_95_conf_predict(const matrix& obs) const;
 
+
+    //Repeteadly computes a linear regression model and filters out points for which their real value is not in the 
+    //95% confidence interval. Stop condition: less than max(theta, 1) datapoints are found or more than max_iter iterations are done.
+    static matrix::vector<bool> find_outliers(matrix y, matrix X, int theta =1, int max_iter =10);
+    
 private:
     void assert_fitted() const;
     void set_coeff_std_dev();

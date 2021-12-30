@@ -2,6 +2,7 @@
 
 #include "../Matrix/matrix.h"
 #include <functional>
+#include <math.h>
 
 /*  This file contains helper functions for computing with doubles.     
 */
@@ -10,7 +11,11 @@ using matrix = Matrix<double>;
 
 struct non_invertible : std::runtime_error { non_invertible(const char* msg) : std::runtime_error(msg) {}};
 
-const double EPS = 1e-09;
+namespace Helper {
+    const double EPS = 1e-09;
+    const double MATH_PI = std::atan(1)*4;
+    const double MATH_E = std::exp(1);
+}
 
 bool iin(double v, double n, double e); //Is in neighbourhood.
 bool is_one(double v); //With precision = EPS.

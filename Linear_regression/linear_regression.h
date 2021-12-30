@@ -54,7 +54,7 @@ public:
 
     //These functions return the 95% confidence interval of a prediction given an observation.
     interval get_95_conf_predict(const matrix::vector<double>& obs) const;
-    matrix::vector<interval> get_95_conf_predict(const matrix& obs) const; //In this case obs needs to be a 1 times k matrix.
+    matrix::vector<interval> get_95_conf_predict(const matrix& obs) const;
 
 private:
     void assert_fitted() const;

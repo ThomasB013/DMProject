@@ -1,8 +1,8 @@
 #include "data_frame.h"
+#include "linear_regression.h"
+#include "parser.h"
 
 #include <iomanip>
-#include <algorithm>
-#include "linear_regression.h"
 #include <sstream>
 #include <fstream>
 
@@ -32,6 +32,8 @@ data_frame::data_frame(std::string file) {
     std::stringstream s {header};
     while (s >> header)
         col_names.push_back(header);
+
+    Parse::Parser::make_valid_names(col_names);
 
     const matrix::size_type dim = col_names.size();
 
@@ -91,14 +93,11 @@ void print_summary(std::ostream& os, const data_frame& d) {
 }
 
 matrix::size_type data_frame::index (const std::string& col_name) const {
-    return std::find(col_names.begin(), col_names.end(), col_name) - col_names.begin();
+    return Parse::index(col_names, col_name);
 }
 
 matrix::size_type data_frame::get_index (const std::string& col_name) const {
-    const auto POS = index(col_name);
-    if (POS == col_names.size())
-        throw col_name_not_found {"Column name " + col_name + " not found."};
-    return POS;
+    return Parse::get_index(col_names, col_name);
 }
 
 
@@ -152,6 +151,13 @@ void data_frame::regress(std::string explained, std::string explanatory, std::os
 }
 
 data_frame& data_frame::add_col(std::string name, std::string expr) {
+    if (!Parse::Parser::valid_name(name))
+        throw Parse::invalid_col_name {name};
+    Parse::Parser p(col_names, expr);
 
+    col_names.push_back(name);
+
+    for (matrix::size_type i = 0; i != data.row_count(); ++i)
+        data[i].push_back(p.eval(i, data[i]));
     return *this;
 }

@@ -2,20 +2,17 @@
 
 #include <utility>
 #include <limits>
-#include <math.h>
-
-const double PI = std::atan(1)*4;
 
 bool iin(double v, double n, double e) { 
     return (n - e < v && v < n + e);
 }
 
 bool is_one(double v) {
-    return iin(v, 1, EPS);
+    return iin(v, 1, Helper::EPS);
 }
 
 bool is_zero(double v){
-    return iin(v, 0, EPS);
+    return iin(v, 0, Helper::EPS);
 }
 
 matrix operator+(const matrix& A, const matrix& B) {
@@ -259,7 +256,7 @@ double integral(std::function<double(double)> f, double a, double b, int n) {
 }
 
 double first_part_student_t(int freedom){
-    return std::tgamma((freedom + 1.0)/2.0) / (std::sqrt(PI * freedom) * std::tgamma(freedom/2.0));
+    return std::tgamma((freedom + 1.0)/2.0) / (std::sqrt(Helper::MATH_PI * freedom) * std::tgamma(freedom/2.0));
 }
 
 double second_part_student_t(int freedom, double x){
@@ -307,7 +304,7 @@ double student_t_0_975(int freedom) {
         const double alpha = (freedom % 20) / 20.0;
         return F_L * (1 - alpha) + F_R * alpha;
     }
-    if (freedom <= 1000) {//between 30 en 40.
+    if (freedom <= 1000) {
         const double F_100 = VALUES_F_40_60_80_100[3];
         const double alpha = (freedom - 100) / 900.0;
         return F_100 * (1 - alpha) + F_1000 * alpha;

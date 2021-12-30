@@ -16,10 +16,27 @@ using namespace std;
 double square(double x){
     return x*x;
 }
-
+#include "Linear_regression/parser.h"
 
 
 int main(){
+
+
+    data_frame df;
+    df.data = matrix{ matrix::vector<double>{}, matrix::vector<double>{}, matrix::vector<double>{}, matrix::vector<double>{} };
+    // +   2^2 - 1 + 4-2*2/(3 - 2)
+    try {
+        df.add_col("four", "lg(4 - 2 - 3^0) + 2^2 - 1 + 4-2*2/(3 - 2)").add_col("id", "$i^2").add_col("id2", "id-2");
+        df.add_col("_id3", "id2 * 4");
+    }
+    catch (exception& e){
+        cout << e.what() << '\n';
+    }
+    cout << df;
+    return 1;
+
+
+
     double t;
     int freedom;
     data_frame f {"C:\\Users\\thoma\\Documents\\Computing Science\\Year 2\\Semester 1\\Data Mining\\DMProject\\data.txt"};

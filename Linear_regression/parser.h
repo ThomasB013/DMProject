@@ -23,6 +23,7 @@ Some remarks:
    We return a nullptr and append the errorstring. The Parser will then throw an error.
 7. (IMPORTANT): This grammar is not completely functional. 1 - 3 - 1 gets parsed as 1-(3-1) 
    This happens because sum = mult - sum. This evaluates to -1 instead of -3 as we might expect.
+   ***This can be fixed by using while loops rather than recursive calls***
 */
 
 namespace Parse {

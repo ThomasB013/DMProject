@@ -1,3 +1,3 @@
-This is my code for the datamining project.
+This is my code for the datamining project in the second year.
 
-I made my own matrix library which I have NOT tested thoroughly, meaning that I will not guarantue it is bug-free.
+I implemented my own matrix and vector as an exercise.
